@@ -130,7 +130,7 @@ func TestNewReverseProxy(t *testing.T) {
 	}
 }
 
-func TestEncodedSlashes(t *testing.T) {
+func testQueryStrings(encodedPath string) (string, error) {
 	var seen string
 	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
@@ -145,9 +145,23 @@ func TestEncodedSlashes(t *testing.T) {
 	defer frontend.Close()
 
 	f, _ := url.Parse(frontend.URL)
-	encodedPath := "/a%2Fb/?c=1"
 	getReq := &http.Request{URL: &url.URL{Scheme: "http", Host: f.Host, Opaque: encodedPath}}
 	_, err := http.DefaultClient.Do(getReq)
+	return seen, err
+}
+func TestEncodedSlashes(t *testing.T) {
+	encodedPath := "/a%2Fb/?c=1"
+	seen, err := testQueryStrings(encodedPath)
+	if err != nil {
+		t.Fatalf("err %s", err)
+	}
+	if seen != encodedPath {
+		t.Errorf("got bad request %q expected %q", seen, encodedPath)
+	}
+}
+func TestEmptyQuery(t *testing.T) {
+	encodedPath := "/abc?"
+	seen, err := testQueryStrings(encodedPath)
 	if err != nil {
 		t.Fatalf("err %s", err)
 	}
