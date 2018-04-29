@@ -135,19 +135,13 @@ func setProxyUpstreamHostHeader(proxy *httputil.ReverseProxy, target *url.URL) {
 	director := proxy.Director
 	proxy.Director = func(req *http.Request) {
 		director(req)
-		// use RequestURI so that we aren't unescaping encoded slashes in the request path
 		req.Host = target.Host
-		req.URL.Opaque = req.RequestURI
-		req.URL.RawQuery = ""
 	}
 }
 func setProxyDirector(proxy *httputil.ReverseProxy) {
 	director := proxy.Director
 	proxy.Director = func(req *http.Request) {
 		director(req)
-		// use RequestURI so that we aren't unescaping encoded slashes in the request path
-		req.URL.Opaque = req.RequestURI
-		req.URL.RawQuery = ""
 	}
 }
 func NewFileServer(path string, filesystemPath string) (proxy http.Handler) {
